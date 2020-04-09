@@ -1,7 +1,7 @@
 """High level package initialization to make classes and functions within the package visible to the user.
 
-@author   <developer names>
-@email:   <developer emails>
+:author:   <developer names>
+:email:   <developer emails>
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
