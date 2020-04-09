@@ -1,3 +1,6 @@
+# test outupts
+im3py/tests/data/outputs/*.*
+
 # pycharm
 .idea
 
