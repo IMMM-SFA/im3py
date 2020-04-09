@@ -61,6 +61,25 @@ class ReadConfig:
                                                 Acceptable range:  -0.5 to 2.0
     :type beta_rural:                           float
 
+    Examples:
+
+        # Option 1:  read configuration from file
+        >>> cfg = ReadConfig(config_file="<path to the config.yml file>")
+
+        # Option 2:  read configuration from parameter input
+        >>> cfg = ReadConfig(output_directory=TestReadConfig.OUTPUT_DIR,
+        >>>                 start_year=TestReadConfig.START_YEAR,
+        >>>                 through_year=TestReadConfig.THROUGH_YEAR,
+        >>>                 time_step=TestReadConfig.TIME_STEP,
+        >>>                 alpha_urban= TestReadConfig.ALPHA_URBAN,
+        >>>                 alpha_rural=TestReadConfig.ALPHA_RURAL,
+        >>>                 beta_urban=TestReadConfig.BETA_URBAN,
+        >>>                 beta_rural=TestReadConfig.BETA_RURAL)
+
+        # use an attribute from the configuration object
+        >>> print(cfg.start_year)
+        2010
+
     """
 
     def __init__(self, config_file=None, output_directory=None, start_year=None,  through_year=None,
