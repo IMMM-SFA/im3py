@@ -71,6 +71,6 @@ class ProcessStep:
         else:
 
             # for other years, generate a mean message file
-            fake.write_mean_file(yr, value_list, cfg.output_directory
+            fake.write_mean_file(yr, value_list, cfg.output_directory)
 
         logging.info("Processing for year {} completed in {} minutes.".format(yr, (time.time() - td) / 60))
