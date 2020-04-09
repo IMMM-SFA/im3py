@@ -54,7 +54,7 @@ class TestReadConfig(unittest.TestCase):
     def test_instance_attributes_params(self):
         """Test that the correct instance attribute values are generated from parameters."""
 
-        # read configuration from file
+        # read configuration from parameters
         cfg = ReadConfig(output_directory=TestReadConfig.OUTPUT_DIR,
                          start_year=TestReadConfig.START_YEAR,
                          through_year=TestReadConfig.THROUGH_YEAR,
