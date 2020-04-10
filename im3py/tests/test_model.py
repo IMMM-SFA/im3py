@@ -18,7 +18,7 @@ class TestModel(unittest.TestCase):
     """Tests for the `ReadConfig` class that reads the input configuration from the user."""
 
     # test config YAML file
-    CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/config.yml')
+    CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/inputs/config.yml')
 
     # comparison outputs
     OUTPUT_2015 = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/output_year_2015.txt')

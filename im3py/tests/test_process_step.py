@@ -19,7 +19,7 @@ class TestProcessStep(unittest.TestCase):
     """Tests for the `ReadConfig` class that reads the input configuration from the user."""
 
     # test config YAML file
-    CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/config.yml')
+    CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/inputs/config.yml')
 
     # expected attribute values
     OUTPUT_DIR = pkg_resources.resource_filename('im3py', 'tests/data/outputs')

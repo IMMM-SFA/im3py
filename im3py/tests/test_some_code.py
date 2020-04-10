@@ -7,7 +7,6 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
-import pkg_resources
 import unittest
 
 import im3py.some_code as fake
