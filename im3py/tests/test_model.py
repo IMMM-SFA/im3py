@@ -7,22 +7,27 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
+import os
 import pkg_resources
 import unittest
 
 from im3py.model import Model
 
 
-class TestReadConfig(unittest.TestCase):
+class TestModel(unittest.TestCase):
     """Tests for the `ReadConfig` class that reads the input configuration from the user."""
 
     # test config YAML file
     CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/config.yml')
 
+    # comparison outputs
+    OUTPUT_2015 = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/output_year_2015.txt')
+    OUTPUT_2016 = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/output_year_2016.txt')
+
     # expected attribute values
-    OUTPUT_DIR = "data/outputs"
+    OUTPUT_DIR = pkg_resources.resource_filename('im3py', "tests/data/outputs")
     START_YEAR = 2015
-    THROUGH_YEAR = 2020
+    THROUGH_YEAR = 2016
     TIME_STEP = 1
     ALPHA_URBAN = 2.0
     ALPHA_RURAL = 0.08
@@ -42,79 +47,37 @@ class TestReadConfig(unittest.TestCase):
     def test_model_outputs(self):
         """Ensure model outputs are what is expected."""
 
-        run = Model(output_directory=TestReadConfig.OUTPUT_DIR,
-                         start_year=TestReadConfig.START_YEAR,
-                         through_year=TestReadConfig.THROUGH_YEAR,
-                         time_step=TestReadConfig.TIME_STEP,
-                         alpha_urban= TestReadConfig.ALPHA_URBAN,
-                         alpha_rural=TestReadConfig.ALPHA_RURAL,
-                         beta_urban=TestReadConfig.BETA_URBAN,
-                         beta_rural=TestReadConfig.BETA_RURAL)
+        run = Model(output_directory=TestModel.OUTPUT_DIR,
+                         start_year=TestModel.START_YEAR,
+                         through_year=TestModel.THROUGH_YEAR,
+                         time_step=TestModel.TIME_STEP,
+                         alpha_urban= TestModel.ALPHA_URBAN,
+                         alpha_rural=TestModel.ALPHA_RURAL,
+                         beta_urban=TestModel.BETA_URBAN,
+                         beta_rural=TestModel.BETA_RURAL)
 
         run.run_all_steps()
 
-        
+        # compare outputs to expected
+        run_output_2015 = os.path.join(TestModel.OUTPUT_DIR, 'output_year_2015.txt')
+        run_output_2016 = os.path.join(TestModel.OUTPUT_DIR, 'output_year_2016.txt')
 
-    # def test_instance_attributes_config(self):
-    #     """Test that the correct instance attribute values are generated from the config file read."""
-    #
-    #     # read configuration from file
-    #     run = Model(config_file=TestReadConfig.CONFIG_YAML)
-    #
-    #     # check value equality for each variable with expected
-    #     self.check_values(run)
-    #
-    #     # check type equality for each variable with expected
-    #     self.check_types(run)
-    #
-    # def test_instance_attributes_params(self):
-    #     """Test that the correct instance attribute values are generated from parameters."""
-    #
-    #     # read configuration from parameters
-    #     run = Model(output_directory=TestReadConfig.OUTPUT_DIR,
-    #                      start_year=TestReadConfig.START_YEAR,
-    #                      through_year=TestReadConfig.THROUGH_YEAR,
-    #                      time_step=TestReadConfig.TIME_STEP,
-    #                      alpha_urban= TestReadConfig.ALPHA_URBAN,
-    #                      alpha_rural=TestReadConfig.ALPHA_RURAL,
-    #                      beta_urban=TestReadConfig.BETA_URBAN,
-    #                      beta_rural=TestReadConfig.BETA_RURAL)
-    #
-    #     # check value equality for each variable with expected
-    #     self.check_values(run)
-    #
-    #     # check type equality for each variable with expected
-    #     self.check_types(run)
+        self.assertEqual(self.get_file_content(run_output_2015), self.get_file_content(TestModel.OUTPUT_2015))
+        self.assertEqual(self.get_file_content(run_output_2016), self.get_file_content(TestModel.OUTPUT_2016))  
 
-    # def check_values(self, cfg):
-    #     """Check values of each configuration attribute against expected.
-    #
-    #     :param cfg:                     Configuration object
-    #
-    #     """
-    #     self.assertEqual(cfg.output_directory, TestReadConfig.OUTPUT_DIR)
-    #     self.assertEqual(cfg.start_year, TestReadConfig.START_YEAR)
-    #     self.assertEqual(cfg.through_year, TestReadConfig.THROUGH_YEAR)
-    #     self.assertEqual(cfg.time_step, TestReadConfig.TIME_STEP)
-    #     self.assertEqual(cfg.alpha_urban, TestReadConfig.ALPHA_URBAN)
-    #     self.assertEqual(cfg.alpha_rural, TestReadConfig.ALPHA_RURAL)
-    #     self.assertEqual(cfg.beta_urban, TestReadConfig.BETA_URBAN)
-    #     self.assertEqual(cfg.beta_rural, TestReadConfig.BETA_RURAL)
-    #
-    # def check_types(self, cfg):
-    #     """Check types of each configuration attribute against expected.
-    #
-    #     :param cfg:                     Configuration object
-    #
-    #     """
-    #     self.assertEqual(type(cfg.output_directory), TestReadConfig.OUTPUT_DIR_TYPE)
-    #     self.assertEqual(type(cfg.start_year), TestReadConfig.START_YEAR_TYPE)
-    #     self.assertEqual(type(cfg.through_year), TestReadConfig.THROUGH_YEAR_TYPE)
-    #     self.assertEqual(type(cfg.time_step), TestReadConfig.TIME_STEP_TYPE)
-    #     self.assertEqual(type(cfg.alpha_urban), TestReadConfig.ALPHA_URBAN_TYPE)
-    #     self.assertEqual(type(cfg.alpha_rural), TestReadConfig.ALPHA_RURAL_TYPE)
-    #     self.assertEqual(type(cfg.beta_urban), TestReadConfig.BETA_URBAN_TYPE)
-    #     self.assertEqual(type(cfg.beta_rural), TestReadConfig.BETA_RURAL_TYPE)
+    @staticmethod
+    def get_file_content(f):
+        """Extract file content to a list.
+
+        :param f:                       Full path with file name and extension to a text file.
+        :type f:                        str
+
+        :return:                        list of file content
+
+        """
+
+        with open(f) as get:
+            return get.readlines()
 
 
 if __name__ == '__main__':
