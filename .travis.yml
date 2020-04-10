@@ -40,3 +40,5 @@ matrix:
       script: travis_wait 35 python3 -m unittest discover
 sudo: false
 cache: pip
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
