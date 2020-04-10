@@ -17,11 +17,42 @@ We use Travis-CI for continuous integration testing to ensure we do not make cha
 
 We also use Codecov as a way to measure how well we are covering our code with tests.  Codecov fits nicely within our Travis-CI setup.  Please contact our software engineering team for a demo of how to get the most from the information this software provides.  Here is some Codecov info if you wish to learn more:  [About Code Coverage](https://docs.codecov.io/docs/about-code-coverage).
 
-As we develop our software, we want to make sure that we conduct relevant and timely releases that are linked to a permanent archive and have a resulting DOI.  We do this in IM3 by linking Zenodo to our repositories.  When we conduct a GitHub release, the resulting archive is automatically created in Zenodo.  This can then be sited in a journal article or meta-repository.  
+As we develop our software, we want to make sure that we conduct relevant and timely releases that are linked to a permanent archive and have a resulting DOI.  We do this in IM3 by linking Zenodo to our repositories.  When we conduct a GitHub release, the resulting archive is automatically created in Zenodo.  This can then be sited in a journal article or meta-repository.  Here is some Zenodo info if you wish to learn more:  [About Zeonodo](https://about.zenodo.org/).
 
-IM3 already has Zenodo, Travis-CI, and Codecov accounts setup, so when you create a repository from this template please notify our software engineering team and we will "flip the switch" to make our account recognize your new repository.
+IM3 already has Zenodo, Travis-CI, and Codecov accounts setup, so when you create a repository from this template please notify our software engineering team and we will "flip the switch" to make our accounts recognize your new repository.
 
 You will also need to update the links in the badges at the top of this document to point to your model's information.
+
+## Understanding the `im3py` repository
+The following table outlines each part of the repository and it's purpose:
+
+| Component | Description |
+| ---- | ---- |
+| `.gitignore` | Which files Git will ignore in your local when you push your changes to the remote |
+| `.travis.yml`| Setup YAML file for Travis-CI; includes instantiation of Codecov
+| `LICENSE` | The appropriate open-source license.  Work with the software engineering team to ensure this is correct for your software |
+| `MANIFEST.in` | A log of files to include in your source distribution that are not automatically included by default |
+| `README.md` | A README file in Markdown that will display on the splash page of the repository |
+| `requirements.txt` | A text file of required non-built-in Python packages to install |
+| `setup.py` | A python file that is equipped with information to install the Python code as a package |
+| `im3py` | The directory containing the Python package code |
+| `im3py/__init__.py` | Allows Python to recognize a directory as a package.  This one raises classes and functions to be accessible to the user from the package level |
+| `im3py/model.py` | A model class that instantiates a logger and runs the model under user defined conditions |
+| `im3py/process_step.py` | A class that the generator is built from which allows the user to place conditions on how the model will run per time-step |
+| `im3py/read_config.py` | A class that reads the configuration file or from arguments passed into the model class |
+| `im3py/some_code.py` | Fake code to represent what a user may provide.  This file should be removed. |
+| `im3py/tests` | The module holding the test suite |
+| `im3py/tests/test_model.py` | Tests for model.py |
+| `im3py/tests/test_process_step.py` | Tests for process_step.py |
+| `im3py/tests/test_read_config.py` | Tests for read_config.py |
+| `im3py/tests/test_some_code.py` | Tests for some_code.py |
+| `im3py/tests/data` | Directory holding test data.  Optional directories are `inputs` and `comp_data`.  The `outputs` are not housed in the repository. |
+| `im3py/tests/data/inputs` | Directory housing inputs that should be expected for a subset of a run |
+| `im3py/tests/data/inputs/config.yml` | Sample configuration YAML file used in tests |
+| `im3py/tests/data/comp_data` | Directory housing outputs that should be expected for a subset of a run.  Test sets should be subsets and be able to run quickly where possible. |
+| `im3py/tests/data/comp_data/output_year_2015.txt` | Expected output file for time-step 2015 |
+| `im3py/tests/data/comp_data/output_year_2016.txt` | Expected output file for time-step 2016 |
+
 
 ## Getting Started Using the `im3py` Package
 The `im3py` package uses only **Python 3.3** and up.
