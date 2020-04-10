@@ -7,7 +7,23 @@ An IM3 template repository for Python projects that have time-steps
 ## Overview
 The purpose of `im3py` is to help developers quickly establish a GitHub repository that conforms to IM3 software engineering standards.  Our hope is to create a common user experience for all Python modeling software developed for use in IM3 experiments.  We are mindfully developing software that exposes key variables per time-step so that they may be used in integrated and/or uncertainty characterization experiments while still maintaining the ability for autonomous use.  This template package establishes the structure necessary to wrap existing Python code in our modeling interface and time-step processing generator.  We also include:  a sample test suite, `Zenodo`, `Travis-CI`, and `codecov` standard files and setup protocol, our expected `docstring` style, a `stdout` and file logger, and an example fake code file that represents a user's code contribution.
 
-## Getting Started
+## Getting Setup with the `im3py` Template Repository
+
+### Using the Template
+Simply click `Use this template` on the main repository page (shows up to the left of `Clone or download`) and fill in your `Repository name`, the `Description`, select whether you want the repository to be `Public` or `Private`, and leave `Include all branches` unchecked.  Repository names for Python packages should match the name of the actual package if at all possible.  Python package name conventions should be all lower case and only separated by an underscore if necessary.  We highly encourage `Public` development as well.
+
+### Setting up Travis-CI, Codecov, and Zenodo for your New Repository
+We use Travis-CI for continuous integration testing to ensure we do not make changes to our code that cause our tests to fail.  The sample `.travis.yml` file is currently setup to test on Windows, Mac, and Linux. You may need to tailor this script to install other libraries before your package is installed on a Travis-CI virtual environment (e.g., GDAL).  Here is some Travis-CI info if you want to learn more:  [Core Concepts for Beginners](https://docs.travis-ci.com/user/for-beginners/).
+
+We also use Codecov as a way to measure how well we are covering our code with tests.  Codecov fits nicely within our Travis-CI setup.  Please contact our software engineering team for a demo of how to get the most from the information this software provides.  Here is some Codecov info if you wish to learn more:  [About Code Coverage](https://docs.codecov.io/docs/about-code-coverage).
+
+As we develop our software, we want to make sure that we conduct relevant and timely releases that are linked to a permanent archive and have a resulting DOI.  We do this in IM3 by linking Zenodo to our repositories.  When we conduct a GitHub release, the resulting archive is automatically created in Zenodo.  This can then be sited in a journal article or meta-repository.  
+
+IM3 already has Zenodo, Travis-CI, and Codecov accounts setup, so when you create a repository from this template please notify our software engineering team and we will "flip the switch" to make our account recognize your new repository.
+
+You will also need to update the links in the badges at the top of this document to point to your model's information.
+
+## Getting Started Using the `im3py` Package
 The `im3py` package uses only **Python 3.3** and up.
 
 ### Step 1:
