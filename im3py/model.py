@@ -1,7 +1,7 @@
 """<Sentence description of what this file does.>
 
-:author:   <developer names>
-:email:   <developer emails>
+:author:   Chris R. Vernon
+:email:    chris.vernon@pnnl.gov
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 

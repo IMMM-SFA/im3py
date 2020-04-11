@@ -1,7 +1,7 @@
 """Process time step for <your model name>
 
-:author:   <developer names>
-:email:   <developer emails>
+:author:   Chris R. Vernon
+:email:    chris.vernon@pnnl.gov
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
