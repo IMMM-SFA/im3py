@@ -1,7 +1,7 @@
 """Tests for the configuration reader functionality.
 
-:author:   <developer names>
-:email:    <developer emails>
+:author:   Chris R. Vernon
+:email:    chris.vernon@pnnl.gov
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
@@ -20,7 +20,7 @@ class TestReadConfig(unittest.TestCase):
     CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/inputs/config.yml')
 
     # expected attribute values
-    OUTPUT_DIR = "tests/data/outputs"
+    OUTPUT_DIR = pkg_resources.resource_filename('im3py', "tests/data/outputs")
     START_YEAR = 2015
     THROUGH_YEAR = 2020
     TIME_STEP = 1

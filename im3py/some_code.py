@@ -1,8 +1,8 @@
 """DELETE THIS FILE.  This is a proxy code file that represents where some user code would be.  It is only for
 illustrative purposes.
 
-:author:   <developer names>
-:email:   <developer emails>
+:author:   Chris R. Vernon
+:email:    chris.vernon@pnnl.gov
 
 License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
