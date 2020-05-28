@@ -13,8 +13,8 @@ import os
 import sys
 import time
 
-from im3py.read_config import ReadConfig
-from im3py.process_step import ProcessStep
+from im3py import ReadConfig
+from im3py import ProcessStep
 
 
 class Model:
