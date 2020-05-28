@@ -7,6 +7,7 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
+import os
 import yaml
 
 
@@ -32,86 +33,93 @@ class ReadConfig:
     :param time_step:                           int. Number of steps
     :type time_step:                            int
 
-    :param alpha_urban:                         Alpha parameter for urban. Represents the degree to which the
+    :param alpha_param:                         Alpha parameter for urban. Represents the degree to which the
                                                 population size of surrounding cells translates into the suitability
                                                 of a focal cell.  A positive value indicates that the larger the
                                                 population that is located within the 100 km neighborhood, the more
                                                 suitable the focal cell is.  More negative value implies less suitable.
                                                 Acceptable range:  -2.0 to 2.0
-    :type alpha_urban:                          float
+    :type alpha_param:                          float
 
 
-    :param beta_urban:                          Beta parameter for urban. Reflects the significance of distance
+    :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
                                                 to surrounding cells on the suitability of a focal cell.  Within 100 km,
                                                 beta determines how distance modifies the effect on suitability.
                                                 Acceptable range:  -0.5 to 2.0
-    :type beta_urban:                           float
-
-    :param alpha_rural:                         Alpha parameter for rural. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
-    :type alpha_rural:                          float
-
-    :param beta_rural:                          Beta parameter for rural. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
-    :type beta_rural:                           float
-
-    Examples:
-
-        # Option 1:  read configuration from file
-        >>> cfg = ReadConfig(config_file="<path to the config.yml file>")
-
-        # Option 2:  read configuration from parameter input
-        >>> cfg = ReadConfig(output_directory=TestReadConfig.OUTPUT_DIR,
-        >>>                 start_year=TestReadConfig.START_YEAR,
-        >>>                 through_year=TestReadConfig.THROUGH_YEAR,
-        >>>                 time_step=TestReadConfig.TIME_STEP,
-        >>>                 alpha_urban= TestReadConfig.ALPHA_URBAN,
-        >>>                 alpha_rural=TestReadConfig.ALPHA_RURAL,
-        >>>                 beta_urban=TestReadConfig.BETA_URBAN,
-        >>>                 beta_rural=TestReadConfig.BETA_RURAL)
-
-        # use an attribute from the configuration object
-        >>> print(cfg.start_year)
-        2010
+    :type beta_param:                           float
 
     """
 
+    OUT_DIR_KEY = 'output_directory'
+    START_YR_KEY = 'start_year'
+    THROUGH_YR_KEY = 'through_year'
+    TIME_STEP_KEY = 'time_step'
+    ALPHA_KEY = 'alpha_param'
+    BETA_KEY = 'beta_param'
+
     def __init__(self, config_file=None, output_directory=None, start_year=None,  through_year=None,
-                 time_step=None, alpha_urban=None, beta_urban=None, alpha_rural=None, beta_rural=None):
+                 time_step=None, alpha_param=None, beta_param=None):
+
+        self._config_file = config_file
+        self._output_directory = output_directory
 
         if config_file is None:
 
-            self.output_directory = output_directory
             self.start_year = start_year
             self.through_year = through_year
             self.time_step = time_step
-            self.alpha_urban = alpha_urban
-            self.beta_urban = beta_urban
-            self.alpha_rural = alpha_rural
-            self.beta_rural = beta_rural
+            self.alpha_param = alpha_param
+            self.beta_param = beta_param
 
         else:
 
-            # extract config file to YAML object
-            cfg = self.get_yaml(config_file)
-
-            self.output_directory = self.validate_key(cfg, 'output_directory')
             self.start_year = self.validate_key(cfg, 'start_year')
             self.through_year = self.validate_key(cfg, 'through_year')
             self.time_step = self.validate_key(cfg, 'time_step')
-            self.alpha_urban = self.validate_key(cfg, 'alpha_urban')
-            self.beta_urban = self.validate_key(cfg, 'beta_urban')
-            self.alpha_rural = self.validate_key(cfg, 'alpha_rural')
-            self.beta_rural = self.validate_key(cfg, 'beta_rural')
+            self.alpha_param = self.validate_key(cfg, 'alpha_param')
+            self.beta_param = self.validate_key(cfg, 'beta_param')
 
         # list of time steps in projection
         self.steps = range(self.start_year, self.through_year + self.time_step, self.time_step)
+
+    @property
+    def output_directory(self):
+        """Validate output directory"""
+
+        if self.config is None:
+            return self.validate_directory(self._output_directory)
+        else:
+            key = self.validate_key(self.config, self.OUT_DIR_KEY)
+            return self.validate_directory(key)
+
+    @property
+    def start_year(self):
+        """Validate start year"""
+        if self.config is None:
+            return self.validate_step(self._start_year)
+        else:
+            key = self.validate_key(self.config, self.START_YR_KEY)
+            return self.validate_step(key)
+
+    @staticmethod
+    def vaildate_step(step):
+        """Ensure time step is within expected range and an integer"""
+        pass
+
+    @staticmethod
+    def validate_directory(directory):
+        """Validate file to ensure it exists.
+
+        :param directory:                       Full path to the target directory.
+        :type directory:                        str
+
+        :return:                                Full path of a valid directory
+
+        """
+        if os.path.isdir(directory):
+            return directory
+        else:
+            raise NotADirectoryError(f"`output_directory`: {directory} does not exist.")
 
     @staticmethod
     def validate_key(yaml_object, key):
@@ -130,8 +138,8 @@ class ReadConfig:
         except KeyError:
             return None
 
-    @staticmethod
-    def get_yaml(config_file):
+    @property
+    def config(self):
         """Read the YAML config file.
 
         :param config_file:                     Full path with file name and extension to the input config.yml file
@@ -140,5 +148,9 @@ class ReadConfig:
         :return:                                YAML config object
 
         """
-        with open(config_file, 'r') as yml:
-            return yaml.load(yml)
+        if self._config_file is None:
+            return None
+
+        else:
+            with open(self._config_file, 'r') as yml:
+                return yaml.load(yml)

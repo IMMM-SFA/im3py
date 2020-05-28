@@ -10,14 +10,14 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 import datetime
 import logging
 import os
-import sys
 import time
 
 from im3py import ReadConfig
 from im3py import ProcessStep
+from im3py import Logger
 
 
-class Model:
+class Model(ReadConfig):
     """Model wrapper for <your model name>
 
     :param config_file:                         Full path to configuration YAML file with file name and
@@ -39,34 +39,20 @@ class Model:
     :param time_step:                           int. Number of steps
     :type time_step:                            int
 
-    :param alpha_urban:                         Alpha parameter for urban. Represents the degree to which the
+    :param alpha_param:                         Alpha parameter for urban. Represents the degree to which the
                                                 population size of surrounding cells translates into the suitability
                                                 of a focal cell.  A positive value indicates that the larger the
                                                 population that is located within the 100 km neighborhood, the more
                                                 suitable the focal cell is.  More negative value implies less suitable.
                                                 Acceptable range:  -2.0 to 2.0
-    :type alpha_urban:                          float
+    :type alpha_param:                          float
 
 
-    :param beta_urban:                          float. Beta parameter for urban. Reflects the significance of distance
+    :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
                                                 to surrounding cells on the suitability of a focal cell.  Within 100 km,
                                                 beta determines how distance modifies the effect on suitability.
                                                 Acceptable range:  -0.5 to 2.0
-    :type beta_urban:                           float
-
-    :param alpha_rural:                         float. Alpha parameter for rural. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
-    :type alpha_rural:                          float
-
-    :param beta_rural:                          float. Beta parameter for rural. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
-    :type beta_rural:                           float
+    :type beta_param:                           float
 
     Examples:
 
@@ -82,9 +68,7 @@ class Model:
         >>>                 through_year=2030,
         >>>                 time_step=1,
         >>>                 alpha_urban= 2.0,
-        >>>                 alpha_rural=0.08,
-        >>>                 beta_urban=1.78,
-        >>>                 beta_rural=1.42)
+        >>>                 beta_param=1.42)
         >>> run.run_all_steps()
 
         # Option 3:  run model by year by passing argument values and updating them between time steps.
@@ -94,9 +78,7 @@ class Model:
         >>>                 through_year=2030,
         >>>                 time_step=1,
         >>>                 alpha_urban= 2.0,
-        >>>                 alpha_rural=0.08,
-        >>>                 beta_urban=1.78,
-        >>>                 beta_rural=1.42)
+        >>>                 beta_param=1.42)
 
         # initialize model
         >>> run.initialize()
@@ -105,7 +87,7 @@ class Model:
         >>> run.advance_step()
 
         # modify the calibrated alpha parameter value for urban
-        >>> run.alpha_urban = -0.1
+        >>> run.alpha_param = -0.1
 
         # run next step with modified parameters
         >>> run.advance_step()
@@ -114,34 +96,22 @@ class Model:
         >>> run.close()
 
     """
-    def __init__(self, config_file=None, output_directory=None, start_year=None,  through_year=None,
-                 time_step=None, alpha_urban=None, beta_urban=None, alpha_rural=None, beta_rural=None):
+    def __init__(self):
+
+        super(ReadConfig, self).__init__(config_file=None, output_directory=None, start_year=None,  through_year=None,
+                                         time_step=None, alpha_param=None, beta_param=None)
 
         # get current time
         self.date_time_string = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
 
-        # read the YAML configuration file
-        self.cfg = ReadConfig(config_file=config_file,
-                              output_directory=output_directory,
-                              start_year=start_year,
-                              through_year=through_year,
-                              time_step=time_step,
-                              alpha_urban=alpha_urban,
-                              beta_urban=beta_urban,
-                              alpha_rural=alpha_rural,
-                              beta_rural=beta_rural)
+    @property
+    def logger(self):
+        """Convenience wrapper for Logger"""
 
-        # expose key variables that we want the user to have non-nested access to
-        self.alpha_urban = self.cfg.alpha_urban
-        self.beta_urban = self.cfg.beta_urban
-        self.alpha_rural = self.cfg.alpha_rural
-        self.beta_rural = self.cfg.beta_rural
+        # logger file name
+        logfile = os.path.join(self.output_directory, 'logfile_{}.log'.format(self.date_time_string))
 
-        # logfile path
-        self.logfile = os.path.join(self.cfg.output_directory, 'logfile_{}.log'.format(self.date_time_string))
-
-        # set up time step generator
-        self.timestep = self.build_step_generator()
+        return Logger(logfile)
 
     @staticmethod
     def make_dir(pth):
@@ -150,52 +120,32 @@ class Model:
         if not os.path.exists(pth):
             os.makedirs(pth)
 
-    def init_log(self):
-        """Initialize project-wide logger. The logger outputs to both stdout and a file."""
-
-        log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        log_level = logging.INFO
-
-        logger = logging.getLogger()
-        logger.setLevel(log_level)
-
-        # logger console handler
-        c_handler = logging.StreamHandler(sys.stdout)
-        c_handler.setLevel(log_level)
-        c_handler.setFormatter(log_format)
-        logger.addHandler(c_handler)
-
-        # logger file handler
-        f_handler = logging.FileHandler(self.logfile)
-        c_handler.setLevel(log_level)
-        c_handler.setFormatter(log_format)
-        logger.addHandler(f_handler)
-
     def initialize(self):
         """Setup model."""
 
         # build output directory first to store logfile and other outputs
-        self.make_dir(self.cfg.output_directory)
+        self.make_dir(self.output_directory)
 
         # initialize logger
-        self.init_log()
+        self.logger.initialize_logger()
 
         logging.info("Start time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
 
         # log run parameters
         logging.info("Input parameters:")
-        logging.info("\toutput_directory = {}".format(self.cfg.output_directory))
+        logging.info("\toutput_directory = {}".format(self.output_directory))
 
-    def build_step_generator(self):
+    @property
+    def timestep_generator(self):
         """Build step generator."""
 
-        for step in self.cfg.steps:
-            yield ProcessStep(self.cfg, step, self.alpha_urban, self.beta_urban, self.alpha_rural, self.beta_rural)
+        for step in self.steps:
+            yield
 
     def advance_step(self):
         """Advance to next time step."""
 
-        next(self.timestep)
+        next(self.timestep_generator)
 
     def run_all_steps(self):
         """Run model for all years."""
@@ -209,7 +159,7 @@ class Model:
         logging.info("Starting model run")
 
         # process all years
-        for _ in self.cfg.steps:
+        for _ in self.steps:
             self.advance_step()
 
         logging.info("Model run completed in {} minutes.".format((time.time() - td) / 60))
@@ -217,17 +167,10 @@ class Model:
         # clean logger
         self.close()
 
-    @staticmethod
-    def close():
+    def close(self):
         """End model run and close log files."""
 
         logging.info("End time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
 
         # Remove logging handlers
-        logger = logging.getLogger()
-
-        for handler in logger.handlers[:]:
-            handler.close()
-            logger.removeHandler(handler)
-
-        logging.shutdown()
+        self.logger.close_logger()
