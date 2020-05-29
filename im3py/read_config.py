@@ -30,22 +30,14 @@ class ReadConfig:
     :param through_step:                        Through time step value
     :type through_step:                         int
 
-    :param time_step:                           int. Number of steps
+    :param time_step:                           Number of steps
     :type time_step:                            int
 
-    :param alpha_param:                         Alpha parameter for urban. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
+    :param alpha_param:                         Alpha parameter for model.  Acceptable range:  -2.0 to 2.0
     :type alpha_param:                          float
 
 
-    :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -2.0 to 2.0
+    :param beta_param:                          Beta parameter for model.  Acceptable range:  -2.0 to 2.0
     :type beta_param:                           float
 
     """
