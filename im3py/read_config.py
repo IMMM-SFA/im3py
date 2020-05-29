@@ -24,11 +24,11 @@ class ReadConfig:
                                                 where outputs and the log file will be written.
     :type output_directory:                     str
 
-    :param start_year:                          Four digit first year to process for the projection.
-    :type start_year:                           int
+    :param start_step:                          Start time step value
+    :type start_step:                           int
 
-    :param through_year:                        Four digit last year to process for the projection.
-    :type through_year:                         int
+    :param through_step:                        Through time step value
+    :type through_step:                         int
 
     :param time_step:                           int. Number of steps
     :type time_step:                            int
@@ -45,46 +45,47 @@ class ReadConfig:
     :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
                                                 to surrounding cells on the suitability of a focal cell.  Within 100 km,
                                                 beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
+                                                Acceptable range:  -2.0 to 2.0
     :type beta_param:                           float
 
     """
 
     OUT_DIR_KEY = 'output_directory'
-    START_YR_KEY = 'start_year'
-    THROUGH_YR_KEY = 'through_year'
+    START_STEP_KEY = 'start_step'
+    THROUGH_STEP_KEY = 'through_step'
     TIME_STEP_KEY = 'time_step'
     ALPHA_KEY = 'alpha_param'
     BETA_KEY = 'beta_param'
 
-    def __init__(self, config_file=None, output_directory=None, start_year=None,  through_year=None,
+    # definition of acceptable range of values for parameters
+    MAX_PARAM_VALUE = 2.0
+    MIN_PARAM_VALUE = -2.0
+
+    def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
                  time_step=None, alpha_param=None, beta_param=None):
 
         self._config_file = config_file
         self._output_directory = output_directory
+        self._start_step = start_step
+        self._through_step = through_step
+        self._time_step = time_step
+        self._alpha_param = alpha_param
+        self._beta_param = beta_param
 
-        if config_file is None:
+    @property
+    def config(self):
+        """Read the YAML config file object"""
 
-            self.start_year = start_year
-            self.through_year = through_year
-            self.time_step = time_step
-            self.alpha_param = alpha_param
-            self.beta_param = beta_param
+        if self._config_file is None:
+            return None
 
         else:
-
-            self.start_year = self.validate_key(cfg, 'start_year')
-            self.through_year = self.validate_key(cfg, 'through_year')
-            self.time_step = self.validate_key(cfg, 'time_step')
-            self.alpha_param = self.validate_key(cfg, 'alpha_param')
-            self.beta_param = self.validate_key(cfg, 'beta_param')
-
-        # list of time steps in projection
-        self.steps = range(self.start_year, self.through_year + self.time_step, self.time_step)
+            with open(self._config_file, 'r') as yml:
+                return yaml.load(yml)
 
     @property
     def output_directory(self):
-        """Validate output directory"""
+        """Validate output directory."""
 
         if self.config is None:
             return self.validate_directory(self._output_directory)
@@ -93,18 +94,58 @@ class ReadConfig:
             return self.validate_directory(key)
 
     @property
-    def start_year(self):
-        """Validate start year"""
-        if self.config is None:
-            return self.validate_step(self._start_year)
-        else:
-            key = self.validate_key(self.config, self.START_YR_KEY)
-            return self.validate_step(key)
+    def start_step(self):
+        """Start time step."""
+
+        return self.validate_step(self._start_step, self.START_STEP_KEY)
+
+    @property
+    def through_step(self):
+        """Through time step."""
+
+        return self.validate_step(self._through_step, self.THROUGH_STEP_KEY)
+
+    @property
+    def time_step(self):
+        """Number of time steps."""
+
+        return self.validate_step(self._time_step, self.TIME_STEP_KEY)
+
+    @property
+    def alpha_param(self):
+        """Alpha parameter for model."""
+
+        return self.validate_parameter(self._alpha_param, self.ALPHA_KEY)
+
+    @property
+    def beta_param(self):
+        """Beta parameter for model."""
+
+        return self.validate_parameter(self._beta_param, self.BETA_KEY)
+
+    @property
+    def step_list(self):
+        """Create a list of time steps from the start and through steps by the step interval."""
+
+        return range(self.start_step, self.through_step + self.time_step, self.time_step)
 
     @staticmethod
-    def vaildate_step(step):
-        """Ensure time step is within expected range and an integer"""
-        pass
+    def validate_int(step):
+        """Ensure time step is type int"""
+
+        try:
+            return int(step)
+        except TypeError:
+            raise TypeError(f"Step value '{step}' is not an integer.")
+
+    @staticmethod
+    def validate_float(val):
+        """Ensure parameter value is type float"""
+
+        try:
+            return float(val)
+        except TypeError:
+            raise TypeError(f"Parameter value '{val}' is not a float.")
 
     @staticmethod
     def validate_directory(directory):
@@ -138,19 +179,50 @@ class ReadConfig:
         except KeyError:
             return None
 
-    @property
-    def config(self):
-        """Read the YAML config file.
+    def validate_parameter(self, param, key):
+        """Validate parameter existence and range.
 
-        :param config_file:                     Full path with file name and extension to the input config.yml file
-        :type config_file:                      str
+        :param param:               Parameter value
+        :type param:                float
 
-        :return:                                YAML config object
+        :param key:                 Configuration key from YAML file
+        :type key:                  str
+
+        :return:                    int; parameter
 
         """
-        if self._config_file is None:
-            return None
 
+        if self.config is None:
+            is_float = self.validate_float(param)
+            return self.validate_range(is_float)
         else:
-            with open(self._config_file, 'r') as yml:
-                return yaml.load(yml)
+            is_key = self.validate_key(self.config, key)
+            is_float = self.validate_float(is_key)
+            return self.validate_range(is_float)
+
+    def validate_range(self, value):
+        """Ensure value falls within an acceptable range."""
+
+        if (value >= self.MIN_PARAM_VALUE) and (value <= self.MAX_PARAM_VALUE):
+            return value
+        else:
+            raise ValueError(f"Parameter value '{value}' is not within the valid range of {self.MIN_PARAM_VALUE} - {self.MAX_PARAM_VALUE}.")
+
+    def validate_step(self, step, key):
+        """Validate step existence and value.
+
+        :param step:                Time step value
+        :type step:                 int
+
+        :param key:                 Configuration key from YAML file
+        :type key:                  str
+
+        :return:                    int; time step
+
+        """
+
+        if self.config is None:
+            return self.validate_int(step)
+        else:
+            is_key = self.validate_key(self.config, key)
+            return self.validate_int(is_key)
