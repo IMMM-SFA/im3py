@@ -1,2 +1,2 @@
-include population_gravity/tests/data/comp_data/*
-include population_gravity/tests/data/inputs/*
+include im3py/tests/data/comp_data/*
+include im3py/tests/data/inputs/*

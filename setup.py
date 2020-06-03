@@ -29,5 +29,5 @@ setup(
     author='Chris R. Vernon',
     author_email='chris.vernon@pnnl.gov',
     description='A template Python model for IM3.',
-    python_requires='>=3.3.*, <4'
+    python_requires='>=3.6.*, <4'
 )
