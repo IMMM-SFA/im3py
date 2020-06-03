@@ -32,7 +32,8 @@ class Logger(ReadConfig):
         self.console_handler()
 
         # logger file handler
-        self.file_handler()
+        if self.write_logfile:
+            self.file_handler()
 
     def console_handler(self):
         """Construct console handler."""
