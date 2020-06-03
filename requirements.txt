@@ -1,2 +1,2 @@
-setuptools>=24
+requests>=2.18.4
 pyyaml>=3.0
