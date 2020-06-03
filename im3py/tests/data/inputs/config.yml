@@ -1,10 +1,8 @@
 # Test configuration file
 
-output_directory:  "tests/data/outputs"
-start_year: 2015
-through_year: 2020
+start_step: 2015
+through_step: 2016
 time_step: 1
-alpha_urban: 2.0
-alpha_rural: 0.08
-beta_urban: 1.78
-beta_rural: 1.42
+alpha_param: 2.0
+beta_param: 1.42
+write_logfile: False

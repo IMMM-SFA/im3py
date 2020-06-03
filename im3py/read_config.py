@@ -111,6 +111,12 @@ class ReadConfig:
             key = self.validate_key(self.config, self.OUT_DIR_KEY)
             return self.validate_directory(key)
 
+    @output_directory.setter
+    def output_directory(self, value):
+        """Update output directory."""
+
+        self._output_directory = self.validate_directory(value)
+
     @property
     def start_step(self):
         """Start time step."""
@@ -194,7 +200,9 @@ class ReadConfig:
         :return:                                Full path of a valid directory
 
         """
-        if os.path.isdir(directory):
+        if directory is None:
+            return None
+        elif os.path.isdir(directory):
             return directory
         else:
             raise NotADirectoryError(f"`output_directory`: {directory} does not exist.")
