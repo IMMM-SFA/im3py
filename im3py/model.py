@@ -91,10 +91,10 @@ class Model(Logger):
     """
 
     def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
-                 time_step=None, alpha_param=None, beta_param=None):
+                 time_step=None, alpha_param=None, beta_param=None, write_logfile=True):
 
         super(Logger, self).__init__(config_file, output_directory, start_step,  through_step,
-                                     time_step, alpha_param, beta_param)
+                                     time_step, alpha_param, beta_param, write_logfile)
 
         # initialize time step generator
         self._timestep_generator = self.build_timestep_generator()
@@ -109,11 +109,12 @@ class Model(Logger):
     def log_parameters(self):
         """Write parameters to log."""
 
-        attr = [x for x in dir(Logger) if not x.startswith('__') and not callable(getattr(Logger, x))]
-
-        for i in attr:
-            logging.info(f"\t{i} = {getattr(Logger, i.__get__)}")
-
+        logging.info(f"output_directory = {self.output_directory}")
+        logging.info(f"start_step = {self.start_step}")
+        logging.info(f"through_step = {self.through_step}")
+        logging.info(f"time_step = {self.time_step}")
+        logging.info(f"alpha_param = {self.alpha_param}")
+        logging.info(f"beta_param = {self.beta_param}")
 
     def initialize(self):
         """Setup model."""
@@ -128,8 +129,6 @@ class Model(Logger):
 
         # log run parameters
         logging.info("Model parameters:")
-        logging.info("\toutput_directory = {}".format(self.output_directory))
-
         self.log_parameters()
 
     def build_timestep_generator(self):

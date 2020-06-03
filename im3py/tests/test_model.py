@@ -9,6 +9,7 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 import os
 import pkg_resources
+import tempfile
 import unittest
 
 from im3py.model import Model
@@ -25,7 +26,7 @@ class TestModel(unittest.TestCase):
     OUTPUT_2016 = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/output_year_2016.txt')
 
     # expected attribute values
-    OUTPUT_DIR = pkg_resources.resource_filename('im3py', "tests/data/outputs")
+    OUTPUT_DIR = pkg_resources.resource_filename('im3py', "tests/data")
     START_STEP = 2015
     THROUGH_STEP = 2016
     TIME_STEP = 1
@@ -46,21 +47,25 @@ class TestModel(unittest.TestCase):
     def test_model_outputs(self):
         """Ensure model outputs are what is expected."""
 
-        run = Model(output_directory=TestModel.OUTPUT_DIR,
-                    start_step=TestModel.START_STEP,
-                    through_step=TestModel.THROUGH_STEP,
-                    time_step=TestModel.TIME_STEP,
-                    alpha_param=TestModel.ALPHA_PARAM,
-                    beta_param=TestModel.BETA_PARAM)
+        # create a temporary directory to hold the outputs
+        with tempfile.TemporaryDirectory() as dirpath:
 
-        run.run_all_steps()
+            run = Model(output_directory=dirpath,
+                        start_step=TestModel.START_STEP,
+                        through_step=TestModel.THROUGH_STEP,
+                        time_step=TestModel.TIME_STEP,
+                        alpha_param=TestModel.ALPHA_PARAM,
+                        beta_param=TestModel.BETA_PARAM,
+                        write_logfile=False)
 
-        # compare outputs to expected
-        run_output_2015 = os.path.join(TestModel.OUTPUT_DIR, 'output_year_2015.txt')
-        run_output_2016 = os.path.join(TestModel.OUTPUT_DIR, 'output_year_2016.txt')
+            run.run_all_steps()
 
-        self.assertEqual(self.get_file_content(run_output_2015), self.get_file_content(TestModel.OUTPUT_2015))
-        self.assertEqual(self.get_file_content(run_output_2016), self.get_file_content(TestModel.OUTPUT_2016))
+            # compare outputs to expected
+            run_output_2015 = os.path.join(dirpath, 'output_year_2015.txt')
+            run_output_2016 = os.path.join(dirpath, 'output_year_2016.txt')
+
+            self.assertEqual(self.get_file_content(run_output_2015), self.get_file_content(TestModel.OUTPUT_2015))
+            self.assertEqual(self.get_file_content(run_output_2016), self.get_file_content(TestModel.OUTPUT_2016))
 
     @staticmethod
     def get_file_content(f):
