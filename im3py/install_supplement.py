@@ -7,7 +7,6 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
-import argparse
 import os
 import requests
 import logging
@@ -71,10 +70,8 @@ class InstallSupplement:
 
         return requests.get(self.data_url)
 
-    @property
     def fetch_unpack_data(self):
-        """Download and unpack the Zenodo example data supplement for the
-        current distribution."""
+        """Download and unzip example data supplement for the current distribution."""
 
         with zipfile.ZipFile(BytesIO(self.download_data.content)) as zipped:
 
@@ -82,13 +79,3 @@ class InstallSupplement:
             for f in zipped.namelist():
                 logging.info(f"Unzipped: {os.path.join(self.example_data_directory, f)}")
                 zipped.extract(f, self.example_data_directory)
-
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser()
-    help_msg = 'Full path to the directory you wish to install the supplemental data to.'
-    parser.add_argument('example_data_directory', type=str, help=help_msg)
-    args = parser.parse_args()
-
-    zen = InstallSupplement(args.example_data_directory)
