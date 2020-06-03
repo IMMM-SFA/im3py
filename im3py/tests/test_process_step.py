@@ -9,27 +9,25 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 import os
 import pkg_resources
+import tempfile
 import unittest
 
-from im3py.read_config import ReadConfig
-from im3py.process_step import ProcessStep
+from im3py.process_step import process_step
 
 
 class TestProcessStep(unittest.TestCase):
     """Tests for the `ReadConfig` class that reads the input configuration from the user."""
 
-    # test config YAML file
-    CONFIG_YAML = pkg_resources.resource_filename('im3py', 'tests/data/inputs/config.yml')
-
     # expected attribute values
-    OUTPUT_DIR = pkg_resources.resource_filename('im3py', 'tests/data/outputs')
-    START_YEAR = 2015
-    THROUGH_YEAR = 2016
+    OUTPUT_DIR = pkg_resources.resource_filename('im3py', 'tests/data')
+    START_STEP = 2015
+    THROUGH_STEP = 2016
     TIME_STEP = 1
-    ALPHA_URBAN = 2.0
-    ALPHA_RURAL = 0.08
-    BETA_URBAN = 1.78
-    BETA_RURAL = 1.42
+    ALPHA_PARAM = 2.0
+    BETA_PARAM = 1.42
+
+    # comparison outputs
+    OUTPUT_2015 = pkg_resources.resource_filename('im3py', 'tests/data/comp_data/output_year_2015.txt')
 
     @classmethod
     def create_output_directory(cls):
@@ -38,29 +36,37 @@ class TestProcessStep(unittest.TestCase):
         if not os.path.exists(cls.OUTPUT_DIR):
             os.makedirs(cls.OUTPUT_DIR)
 
-    def test_instantiation(self):
-        """Test model instantiation."""
+    def test_process_step_outputs(self):
+        """Test output equality."""
 
-        # create output directory if it does not exist
-        self.create_output_directory()
+        # create a temporary directory to hold the outputs
+        with tempfile.TemporaryDirectory() as dirpath:
 
-        # read configuration from parameters
-        cfg = ReadConfig(output_directory=TestProcessStep.OUTPUT_DIR,
-                         start_year=TestProcessStep.START_YEAR,
-                         through_year=TestProcessStep.THROUGH_YEAR,
-                         time_step=TestProcessStep.TIME_STEP,
-                         alpha_urban=TestProcessStep.ALPHA_URBAN,
-                         alpha_rural=TestProcessStep.ALPHA_RURAL,
-                         beta_urban=TestProcessStep.BETA_URBAN,
-                         beta_rural=TestProcessStep.BETA_RURAL)
+            # instantiate class for the start year
+            process_step(step=TestProcessStep.START_STEP,
+                         alpha_param=TestProcessStep.ALPHA_PARAM,
+                         beta_param=TestProcessStep.BETA_PARAM,
+                         start_step=TestProcessStep.START_STEP,
+                         output_directory=dirpath)
 
-        # instantiate class for the start year
-        step = ProcessStep(cfg,
-                           TestProcessStep.START_YEAR,
-                           TestProcessStep.ALPHA_URBAN,
-                           TestProcessStep.BETA_URBAN,
-                           TestProcessStep.ALPHA_RURAL,
-                           TestProcessStep.BETA_RURAL)
+            # compare outputs to expected
+            run_output_2015 = os.path.join(dirpath, 'output_year_2015.txt')
+
+            self.assertEqual(self.get_file_content(run_output_2015), self.get_file_content(TestProcessStep.OUTPUT_2015))
+
+    @staticmethod
+    def get_file_content(f):
+        """Extract file content to a list.
+
+        :param f:                       Full path with file name and extension to a text file.
+        :type f:                        str
+
+        :return:                        list of file content
+
+        """
+
+        with open(f) as get:
+            return get.readlines()
 
 
 if __name__ == '__main__':
