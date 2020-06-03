@@ -41,6 +41,9 @@ class ReadConfig:
     :param beta_param:                          Beta parameter for model.  Acceptable range:  -2.0 to 2.0
     :type beta_param:                           float
 
+    :param write_logfile:                       Optional, choose to write log as file.
+    :type write_logfile:                        bool
+
     """
 
     OUT_DIR_KEY = 'output_directory'
@@ -58,7 +61,7 @@ class ReadConfig:
     DATETIME_FORMAT = '%Y-%m-%d_%Hh%Mm%Ss'
 
     def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
-                 time_step=None, alpha_param=None, beta_param=None):
+                 time_step=None, alpha_param=None, beta_param=None, write_logfile=True):
 
         self._config_file = config_file
         self._output_directory = output_directory
@@ -67,6 +70,7 @@ class ReadConfig:
         self._time_step = time_step
         self._alpha_param = alpha_param
         self._beta_param = beta_param
+        self._write_logfile = write_logfile
 
     @property
     def date_time_string(self):
@@ -79,6 +83,12 @@ class ReadConfig:
         """Convenience wrapper for the DATETIME_FORMAT class attribute."""
 
         return self.DATETIME_FORMAT
+
+    @property
+    def write_logfile(self):
+        """Choose to write log to file."""
+
+        return self._write_logfile
 
     @property
     def config(self):
