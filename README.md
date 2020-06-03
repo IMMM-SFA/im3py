@@ -56,7 +56,7 @@ The following table outlines each part of the repository and it's purpose:
 
 
 ## Getting Started Using the `im3py` Package
-The `im3py` package uses only **Python 3.3** and up.
+The `im3py` package uses only **Python 3.6** and up.
 
 ### Step 1:
 You can install `im3py` by running the following from your cloned directory (NOTE: ensure that you are using the desired `pip` instance that matches your Python3 distribution):
