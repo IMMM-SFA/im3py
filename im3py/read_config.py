@@ -7,6 +7,7 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
+import datetime
 import os
 import yaml
 
@@ -53,6 +54,9 @@ class ReadConfig:
     MAX_PARAM_VALUE = 2.0
     MIN_PARAM_VALUE = -2.0
 
+    # format for datetime string
+    DATETIME_FORMAT = '%Y-%m-%d_%Hh%Mm%Ss'
+
     def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
                  time_step=None, alpha_param=None, beta_param=None):
 
@@ -63,6 +67,18 @@ class ReadConfig:
         self._time_step = time_step
         self._alpha_param = alpha_param
         self._beta_param = beta_param
+
+    @property
+    def date_time_string(self):
+        """Get a current time in a string matching the specified datetime format."""
+
+        return datetime.datetime.now().strftime(self.DATETIME_FORMAT)
+
+    @property
+    def datetime_format(self):
+        """Convenience wrapper for the DATETIME_FORMAT class attribute."""
+
+        return self.DATETIME_FORMAT
 
     @property
     def config(self):
@@ -109,17 +125,36 @@ class ReadConfig:
 
         return self.validate_parameter(self._alpha_param, self.ALPHA_KEY)
 
+    @alpha_param.setter
+    def alpha_param(self, value):
+        """Setter for alpha parameter."""
+
+        self._alpha_param = self.validate_parameter(value, self.ALPHA_KEY)
+
     @property
     def beta_param(self):
         """Beta parameter for model."""
 
         return self.validate_parameter(self._beta_param, self.BETA_KEY)
 
+    @beta_param.setter
+    def beta_param(self, value):
+        """Setter for alpha parameter."""
+
+        self._beta_param = self.validate_parameter(value, self.BETA_KEY)
+
     @property
     def step_list(self):
         """Create a list of time steps from the start and through steps by the step interval."""
 
         return range(self.start_step, self.through_step + self.time_step, self.time_step)
+
+    @property
+    def logfile(self):
+        """Full path with file name and extension to the logfile."""
+
+        # logger file name
+        return os.path.join(self.output_directory, 'logfile_{}.log'.format(self.date_time_string))
 
     @staticmethod
     def validate_int(step):

@@ -1,39 +1,54 @@
 import logging
 import sys
 
+from im3py.read_config import ReadConfig
 
-class Logger:
-    """Initialize project-wide logger. The logger outputs to both stdout and a file.
 
-    :param logfile:                             Full path with file name and extension to the log file.
+class Logger(ReadConfig):
+    """Initialize project-wide logger. The logger outputs to both stdout and a file."""
 
-    """
+    # output format for log string
+    LOG_FORMAT_STRING = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
-    def __init__(self, logfile):
+    @property
+    def log_format(self):
+        """Generate log formatter."""
 
-        self._logfile = logfile
+        return logging.Formatter(self.LOG_FORMAT_STRING)
+
+    @property
+    def logger(self):
+        """Initialize logger as level info."""
+
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+
+        return logger
 
     def initialize_logger(self):
         """Initialize logger to stdout and file."""
 
-        # set format
-        log_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-        # init logger
-        logger = logging.getLogger()
-        logger.setLevel(logging.INFO)
-
         # logger console handler
-        c_handler = logging.StreamHandler(sys.stdout)
-        c_handler.setLevel(logging.INFO)
-        c_handler.setFormatter(log_format)
-        logger.addHandler(c_handler)
+        self.console_handler()
 
         # logger file handler
-        f_handler = logging.FileHandler(self._logfile)
-        c_handler.setLevel(logging.INFO)
-        c_handler.setFormatter(log_format)
-        logger.addHandler(f_handler)
+        self.file_handler()
+
+    def console_handler(self):
+        """Construct console handler."""
+
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(self.log_format)
+        self.logger.addHandler(console_handler)
+
+    def file_handler(self):
+        """Construct file handler."""
+
+        file_handler = logging.FileHandler(self.logfile)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(self.log_format)
+        self.logger.addHandler(file_handler)
 
     @staticmethod
     def close_logger():

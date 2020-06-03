@@ -12,53 +12,43 @@ import time
 
 import im3py.some_code as fake
 
-from im3py import Model
 
-
-class ProcessStep(Model):
+def process_step(step, alpha_param, beta_param, start_step, output_directory):
     """Process a time step based on a condition.
 
-    :param cfg:                                 Configuration file object
+    :param step:                                Current time step
+    :type step:                                 int
 
-    :param yr:                                  Target year (YYYY) for a time step
-    :type yr:                                   int
+    :param start_step:                          Start time step value
+    :type start_step:                           int
 
-    :param alpha_param:                         Alpha parameter for urban. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
+    :param through_step:                        Through time step value
+    :type through_step:                         int
+
+    :param alpha_param:                         Alpha parameter for model.  Acceptable range:  -2.0 to 2.0
     :type alpha_param:                          float
 
-
-    :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
+    :param beta_param:                          Beta parameter for model.  Acceptable range:  -2.0 to 2.0
     :type beta_param:                           float
 
     """
 
-    def process_step(self, yr):
-        """Process some calculation for a time step."""
+    start_time = time.time()
 
-        # start time
-        td = time.time()
+    logging.info("Processing step:  {}".format(step))
 
-        logging.info("Processing year:  {}".format(yr))
+    # create a value list for each parameter
+    value_list = [alpha_param, beta_param]
 
-        # create a value list for each parameter
-        value_list = [self.alpha_param, self.beta_param]
+    if step == start_step:
 
-        if yr == self.start_year:
+        # if year one, generate sum message file
+        fake.write_sum_file(step, value_list, output_directory)
 
-            # if year one, generate sum message file
-            fake.write_sum_file(yr, value_list, self.output_directory)
+    else:
 
-        else:
+        # for other years, generate a mean message file
+        fake.write_mean_file(step, value_list, output_directory)
 
-            # for other years, generate a mean message file
-            fake.write_mean_file(yr, value_list, self.output_directory)
+    logging.info("Processing for step {} completed in {} minutes.".format(step, (time.time() - start_time) / 60))
 
-        logging.info("Processing for year {} completed in {} minutes.".format(yr, (time.time() - td) / 60))

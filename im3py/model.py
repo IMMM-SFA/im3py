@@ -7,18 +7,19 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
-import datetime
 import logging
 import os
 import time
 
-from im3py import ReadConfig
-from im3py import ProcessStep
-from im3py import Logger
+import im3py.process_step as proc
+
+# Logger inherits ReadConfig
+from im3py.logger import Logger
 
 
-class Model(ReadConfig):
-    """Model wrapper for <your model name>
+class Model(Logger):
+    """Model wrapper for <your model name>.  This class inherits both ReadConfig and Logger classes from this package.
+    Input parameters are specified and controlled in ReadConfig class in 'read_config.py'.
 
     :param config_file:                         Full path to configuration YAML file with file name and
                                                 extension. If not provided by the user, the code will default to the
@@ -30,54 +31,46 @@ class Model(ReadConfig):
                                                 where outputs and the log file will be written.
     :type output_directory:                     str
 
-    :param start_year:                          Four digit first year to process for the projection.
-    :type start_year:                           int
+    :param start_step:                          Start time step value
+    :type start_step:                           int
 
-    :param through_year:                        Four digit last year to process for the projection.
-    :type through_year:                         int
+    :param through_step:                        Through time step value
+    :type through_step:                         int
 
-    :param time_step:                           int. Number of steps
+    :param time_step:                           Number of steps
     :type time_step:                            int
 
-    :param alpha_param:                         Alpha parameter for urban. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
+    :param alpha_param:                         Alpha parameter for model.  Acceptable range:  -2.0 to 2.0
     :type alpha_param:                          float
 
 
-    :param beta_param:                          float. Beta parameter for urban. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
+    :param beta_param:                          Beta parameter for model.  Acceptable range:  -2.0 to 2.0
     :type beta_param:                           float
 
     Examples:
 
-        # Option 1:  run model for all years by passing a configuration YAML as the sole argument
+        # Option 1:  run model for all steps by passing a configuration YAML as the sole argument
         >>> from im3py.model import Model
-        >>> run = Model(config_file="<path to your config file with the file name and extension.")
+        >>> run = Model(config_file="<path to your config file with the file name and extension.>")
         >>> run.run_all_steps()
 
-        # Option 2:  run model for all years by passing argument values
+        # Option 2:  run model for all steps by passing argument values
         >>> from im3py.model import Model
         >>> run = Model(output_directory="<output directory path>",
-        >>>                 start_year=2015,
-        >>>                 through_year=2030,
+        >>>                 start_step=2015,
+        >>>                 through_step=2030,
         >>>                 time_step=1,
-        >>>                 alpha_urban= 2.0,
+        >>>                 alpha_param= 2.0,
         >>>                 beta_param=1.42)
         >>> run.run_all_steps()
 
         # Option 3:  run model by year by passing argument values and updating them between time steps.
         >>> from im3py.model import Model
         >>> run = Model(output_directory="<output directory path>",
-        >>>                 start_year=2015,
-        >>>                 through_year=2030,
+        >>>                 start_step=2015,
+        >>>                 through_step=2030,
         >>>                 time_step=1,
-        >>>                 alpha_urban= 2.0,
+        >>>                 alpha_param= 2.0,
         >>>                 beta_param=1.42)
 
         # initialize model
@@ -96,22 +89,15 @@ class Model(ReadConfig):
         >>> run.close()
 
     """
-    def __init__(self):
 
-        super(ReadConfig, self).__init__(config_file=None, output_directory=None, start_year=None,  through_year=None,
-                                         time_step=None, alpha_param=None, beta_param=None)
+    def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
+                 time_step=None, alpha_param=None, beta_param=None):
 
-        # get current time
-        self.date_time_string = datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%Ss')
+        super(Logger, self).__init__(config_file, output_directory, start_step,  through_step,
+                                     time_step, alpha_param, beta_param)
 
-    @property
-    def logger(self):
-        """Convenience wrapper for Logger"""
-
-        # logger file name
-        logfile = os.path.join(self.output_directory, 'logfile_{}.log'.format(self.date_time_string))
-
-        return Logger(logfile)
+        # initialize time step generator
+        self._timestep_generator = self.build_timestep_generator()
 
     @staticmethod
     def make_dir(pth):
@@ -120,6 +106,15 @@ class Model(ReadConfig):
         if not os.path.exists(pth):
             os.makedirs(pth)
 
+    def log_parameters(self):
+        """Write parameters to log."""
+
+        attr = [x for x in dir(Logger) if not x.startswith('__') and not callable(getattr(Logger, x))]
+
+        for i in attr:
+            logging.info(f"\t{i} = {getattr(Logger, i.__get__)}")
+
+
     def initialize(self):
         """Setup model."""
 
@@ -127,25 +122,34 @@ class Model(ReadConfig):
         self.make_dir(self.output_directory)
 
         # initialize logger
-        self.logger.initialize_logger()
+        self.initialize_logger()
 
-        logging.info("Start time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
+        logging.info("Start time:  {}".format(time.strftime(self.datetime_format)))
 
         # log run parameters
-        logging.info("Input parameters:")
+        logging.info("Model parameters:")
         logging.info("\toutput_directory = {}".format(self.output_directory))
 
-    @property
-    def timestep_generator(self):
-        """Build step generator."""
+        self.log_parameters()
 
-        for step in self.steps:
-            yield
+    def build_timestep_generator(self):
+        """Construct time step generator from ProcessStep class."""
+
+        for step in self.step_list:
+            yield proc.process_step(step, self.alpha_param, self.beta_param, self.start_step, self.output_directory)
 
     def advance_step(self):
-        """Advance to next time step."""
+        """Advance time step."""
 
-        next(self.timestep_generator)
+        next(self._timestep_generator)
+
+    def close(self):
+        """End model run and close log files."""
+
+        logging.info("End time:  {}".format(time.strftime(self.datetime_format)))
+
+        # Remove logging handlers
+        self.close_logger()
 
     def run_all_steps(self):
         """Run model for all years."""
@@ -159,18 +163,12 @@ class Model(ReadConfig):
         logging.info("Starting model run")
 
         # process all years
-        for _ in self.steps:
+        for _ in self.step_list:
+
+            logging.info(_)
             self.advance_step()
 
         logging.info("Model run completed in {} minutes.".format((time.time() - td) / 60))
 
         # clean logger
         self.close()
-
-    def close(self):
-        """End model run and close log files."""
-
-        logging.info("End time:  {}".format(time.strftime("%Y-%m-%d %H:%M:%S")))
-
-        # Remove logging handlers
-        self.logger.close_logger()

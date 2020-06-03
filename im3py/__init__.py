@@ -8,9 +8,5 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 """
 
 from im3py.model import Model
-from im3py.process_step import ProcessStep
-from im3py.read_config import ReadConfig
-from im3py.logger import Logger
 
-
-__all__ = ['Model', 'ProcessStep', 'ReadConfig', 'Logger']
+__all__ = ['Model']

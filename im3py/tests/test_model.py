@@ -26,35 +26,32 @@ class TestModel(unittest.TestCase):
 
     # expected attribute values
     OUTPUT_DIR = pkg_resources.resource_filename('im3py', "tests/data/outputs")
-    START_YEAR = 2015
-    THROUGH_YEAR = 2016
+    START_STEP = 2015
+    THROUGH_STEP = 2016
     TIME_STEP = 1
-    ALPHA_URBAN = 2.0
-    ALPHA_RURAL = 0.08
-    BETA_URBAN = 1.78
-    BETA_RURAL = 1.42
+    ALPHA_PARAM = 2.0
+    BETA_PARAM = 1.42
 
-    # expected attribute types
-    OUTPUT_DIR_TYPE = str
-    START_YEAR_TYPE = int
-    THROUGH_YEAR_TYPE = int
-    TIME_STEP_TYPE = int
-    ALPHA_URBAN_TYPE = float
-    ALPHA_RURAL_TYPE = float
-    BETA_URBAN_TYPE = float
-    BETA_RURAL_TYPE = float
+    def test_model_instantiation(self):
+        """Test model instantiation."""
+
+        run = Model(output_directory=TestModel.OUTPUT_DIR,
+                     through_step=TestModel.THROUGH_STEP,
+                     time_step=TestModel.TIME_STEP,
+                     alpha_param=TestModel.ALPHA_PARAM,
+                     beta_param=TestModel.BETA_PARAM)
+
+        self.assertEqual(f"{type(run)}", "<class 'im3py.model.Model'>")
 
     def test_model_outputs(self):
         """Ensure model outputs are what is expected."""
 
         run = Model(output_directory=TestModel.OUTPUT_DIR,
-                         start_year=TestModel.START_YEAR,
-                         through_year=TestModel.THROUGH_YEAR,
-                         time_step=TestModel.TIME_STEP,
-                         alpha_urban= TestModel.ALPHA_URBAN,
-                         alpha_rural=TestModel.ALPHA_RURAL,
-                         beta_urban=TestModel.BETA_URBAN,
-                         beta_rural=TestModel.BETA_RURAL)
+                    start_step=TestModel.START_STEP,
+                    through_step=TestModel.THROUGH_STEP,
+                    time_step=TestModel.TIME_STEP,
+                    alpha_param=TestModel.ALPHA_PARAM,
+                    beta_param=TestModel.BETA_PARAM)
 
         run.run_all_steps()
 
@@ -63,7 +60,7 @@ class TestModel(unittest.TestCase):
         run_output_2016 = os.path.join(TestModel.OUTPUT_DIR, 'output_year_2016.txt')
 
         self.assertEqual(self.get_file_content(run_output_2015), self.get_file_content(TestModel.OUTPUT_2015))
-        self.assertEqual(self.get_file_content(run_output_2016), self.get_file_content(TestModel.OUTPUT_2016))  
+        self.assertEqual(self.get_file_content(run_output_2016), self.get_file_content(TestModel.OUTPUT_2016))
 
     @staticmethod
     def get_file_content(f):
