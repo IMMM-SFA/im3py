@@ -7,6 +7,8 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 
 """
 
+import datetime
+import os
 import yaml
 
 
@@ -23,95 +25,187 @@ class ReadConfig:
                                                 where outputs and the log file will be written.
     :type output_directory:                     str
 
-    :param start_year:                          Four digit first year to process for the projection.
-    :type start_year:                           int
+    :param start_step:                          Start time step value
+    :type start_step:                           int
 
-    :param through_year:                        Four digit last year to process for the projection.
-    :type through_year:                         int
+    :param through_step:                        Through time step value
+    :type through_step:                         int
 
-    :param time_step:                           int. Number of steps
+    :param time_step:                           Number of steps
     :type time_step:                            int
 
-    :param alpha_urban:                         Alpha parameter for urban. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
-    :type alpha_urban:                          float
+    :param alpha_param:                         Alpha parameter for model.  Acceptable range:  -2.0 to 2.0
+    :type alpha_param:                          float
 
 
-    :param beta_urban:                          Beta parameter for urban. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
-    :type beta_urban:                           float
+    :param beta_param:                          Beta parameter for model.  Acceptable range:  -2.0 to 2.0
+    :type beta_param:                           float
 
-    :param alpha_rural:                         Alpha parameter for rural. Represents the degree to which the
-                                                population size of surrounding cells translates into the suitability
-                                                of a focal cell.  A positive value indicates that the larger the
-                                                population that is located within the 100 km neighborhood, the more
-                                                suitable the focal cell is.  More negative value implies less suitable.
-                                                Acceptable range:  -2.0 to 2.0
-    :type alpha_rural:                          float
-
-    :param beta_rural:                          Beta parameter for rural. Reflects the significance of distance
-                                                to surrounding cells on the suitability of a focal cell.  Within 100 km,
-                                                beta determines how distance modifies the effect on suitability.
-                                                Acceptable range:  -0.5 to 2.0
-    :type beta_rural:                           float
-
-    Examples:
-
-        # Option 1:  read configuration from file
-        >>> cfg = ReadConfig(config_file="<path to the config.yml file>")
-
-        # Option 2:  read configuration from parameter input
-        >>> cfg = ReadConfig(output_directory=TestReadConfig.OUTPUT_DIR,
-        >>>                 start_year=TestReadConfig.START_YEAR,
-        >>>                 through_year=TestReadConfig.THROUGH_YEAR,
-        >>>                 time_step=TestReadConfig.TIME_STEP,
-        >>>                 alpha_urban= TestReadConfig.ALPHA_URBAN,
-        >>>                 alpha_rural=TestReadConfig.ALPHA_RURAL,
-        >>>                 beta_urban=TestReadConfig.BETA_URBAN,
-        >>>                 beta_rural=TestReadConfig.BETA_RURAL)
-
-        # use an attribute from the configuration object
-        >>> print(cfg.start_year)
-        2010
+    :param write_logfile:                       Optional, choose to write log as file.
+    :type write_logfile:                        bool
 
     """
 
-    def __init__(self, config_file=None, output_directory=None, start_year=None,  through_year=None,
-                 time_step=None, alpha_urban=None, beta_urban=None, alpha_rural=None, beta_rural=None):
+    OUT_DIR_KEY = 'output_directory'
+    START_STEP_KEY = 'start_step'
+    THROUGH_STEP_KEY = 'through_step'
+    TIME_STEP_KEY = 'time_step'
+    ALPHA_KEY = 'alpha_param'
+    BETA_KEY = 'beta_param'
 
-        if config_file is None:
+    # definition of acceptable range of values for parameters
+    MAX_PARAM_VALUE = 2.0
+    MIN_PARAM_VALUE = -2.0
 
-            self.output_directory = output_directory
-            self.start_year = start_year
-            self.through_year = through_year
-            self.time_step = time_step
-            self.alpha_urban = alpha_urban
-            self.beta_urban = beta_urban
-            self.alpha_rural = alpha_rural
-            self.beta_rural = beta_rural
+    # format for datetime string
+    DATETIME_FORMAT = '%Y-%m-%d_%Hh%Mm%Ss'
+
+    def __init__(self, config_file=None, output_directory=None, start_step=None,  through_step=None,
+                 time_step=None, alpha_param=None, beta_param=None, write_logfile=True):
+
+        self._config_file = config_file
+        self._output_directory = output_directory
+        self._start_step = start_step
+        self._through_step = through_step
+        self._time_step = time_step
+        self._alpha_param = alpha_param
+        self._beta_param = beta_param
+        self._write_logfile = write_logfile
+
+    @property
+    def date_time_string(self):
+        """Get a current time in a string matching the specified datetime format."""
+
+        return datetime.datetime.now().strftime(self.DATETIME_FORMAT)
+
+    @property
+    def datetime_format(self):
+        """Convenience wrapper for the DATETIME_FORMAT class attribute."""
+
+        return self.DATETIME_FORMAT
+
+    @property
+    def write_logfile(self):
+        """Choose to write log to file."""
+
+        return self._write_logfile
+
+    @property
+    def config(self):
+        """Read the YAML config file object"""
+
+        if self._config_file is None:
+            return None
 
         else:
+            with open(self._config_file, 'r') as yml:
+                return yaml.load(yml, Loader=yaml.FullLoader)
 
-            # extract config file to YAML object
-            cfg = self.get_yaml(config_file)
+    @property
+    def output_directory(self):
+        """Validate output directory."""
 
-            self.output_directory = self.validate_key(cfg, 'output_directory')
-            self.start_year = self.validate_key(cfg, 'start_year')
-            self.through_year = self.validate_key(cfg, 'through_year')
-            self.time_step = self.validate_key(cfg, 'time_step')
-            self.alpha_urban = self.validate_key(cfg, 'alpha_urban')
-            self.beta_urban = self.validate_key(cfg, 'beta_urban')
-            self.alpha_rural = self.validate_key(cfg, 'alpha_rural')
-            self.beta_rural = self.validate_key(cfg, 'beta_rural')
+        if self.config is None:
+            return self.validate_directory(self._output_directory)
+        else:
+            key = self.validate_key(self.config, self.OUT_DIR_KEY)
+            return self.validate_directory(key)
 
-        # list of time steps in projection
-        self.steps = range(self.start_year, self.through_year + self.time_step, self.time_step)
+    @output_directory.setter
+    def output_directory(self, value):
+        """Update output directory."""
+
+        self._output_directory = self.validate_directory(value)
+
+    @property
+    def start_step(self):
+        """Start time step."""
+
+        return self.validate_step(self._start_step, self.START_STEP_KEY)
+
+    @property
+    def through_step(self):
+        """Through time step."""
+
+        return self.validate_step(self._through_step, self.THROUGH_STEP_KEY)
+
+    @property
+    def time_step(self):
+        """Number of time steps."""
+
+        return self.validate_step(self._time_step, self.TIME_STEP_KEY)
+
+    @property
+    def alpha_param(self):
+        """Alpha parameter for model."""
+
+        return self.validate_parameter(self._alpha_param, self.ALPHA_KEY)
+
+    @alpha_param.setter
+    def alpha_param(self, value):
+        """Setter for alpha parameter."""
+
+        self._alpha_param = self.validate_parameter(value, self.ALPHA_KEY)
+
+    @property
+    def beta_param(self):
+        """Beta parameter for model."""
+
+        return self.validate_parameter(self._beta_param, self.BETA_KEY)
+
+    @beta_param.setter
+    def beta_param(self, value):
+        """Setter for alpha parameter."""
+
+        self._beta_param = self.validate_parameter(value, self.BETA_KEY)
+
+    @property
+    def step_list(self):
+        """Create a list of time steps from the start and through steps by the step interval."""
+
+        return range(self.start_step, self.through_step + self.time_step, self.time_step)
+
+    @property
+    def logfile(self):
+        """Full path with file name and extension to the logfile."""
+
+        # logger file name
+        return os.path.join(self.output_directory, 'logfile_{}.log'.format(self.date_time_string))
+
+    @staticmethod
+    def validate_int(step):
+        """Ensure time step is type int"""
+
+        try:
+            return int(step)
+        except TypeError:
+            raise TypeError(f"Step value '{step}' is not an integer.")
+
+    @staticmethod
+    def validate_float(val):
+        """Ensure parameter value is type float"""
+
+        try:
+            return float(val)
+        except TypeError:
+            raise TypeError(f"Parameter value '{val}' is not a float.")
+
+    @staticmethod
+    def validate_directory(directory):
+        """Validate file to ensure it exists.
+
+        :param directory:                       Full path to the target directory.
+        :type directory:                        str
+
+        :return:                                Full path of a valid directory
+
+        """
+        if directory is None:
+            return None
+        elif os.path.isdir(directory):
+            return directory
+        else:
+            raise NotADirectoryError(f"`output_directory`: {directory} does not exist.")
 
     @staticmethod
     def validate_key(yaml_object, key):
@@ -130,15 +224,50 @@ class ReadConfig:
         except KeyError:
             return None
 
-    @staticmethod
-    def get_yaml(config_file):
-        """Read the YAML config file.
+    def validate_parameter(self, param, key):
+        """Validate parameter existence and range.
 
-        :param config_file:                     Full path with file name and extension to the input config.yml file
-        :type config_file:                      str
+        :param param:               Parameter value
+        :type param:                float
 
-        :return:                                YAML config object
+        :param key:                 Configuration key from YAML file
+        :type key:                  str
+
+        :return:                    int; parameter
 
         """
-        with open(config_file, 'r') as yml:
-            return yaml.load(yml)
+
+        if self.config is None:
+            is_float = self.validate_float(param)
+            return self.validate_range(is_float)
+        else:
+            is_key = self.validate_key(self.config, key)
+            is_float = self.validate_float(is_key)
+            return self.validate_range(is_float)
+
+    def validate_range(self, value):
+        """Ensure value falls within an acceptable range."""
+
+        if (value >= self.MIN_PARAM_VALUE) and (value <= self.MAX_PARAM_VALUE):
+            return value
+        else:
+            raise ValueError(f"Parameter value '{value}' is not within the valid range of {self.MIN_PARAM_VALUE} - {self.MAX_PARAM_VALUE}.")
+
+    def validate_step(self, step, key):
+        """Validate step existence and value.
+
+        :param step:                Time step value
+        :type step:                 int
+
+        :param key:                 Configuration key from YAML file
+        :type key:                  str
+
+        :return:                    int; time step
+
+        """
+
+        if self.config is None:
+            return self.validate_int(step)
+        else:
+            is_key = self.validate_key(self.config, key)
+            return self.validate_int(is_key)
