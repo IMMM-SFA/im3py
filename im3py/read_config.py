@@ -99,7 +99,7 @@ class ReadConfig:
 
         else:
             with open(self._config_file, 'r') as yml:
-                return yaml.load(yml)
+                return yaml.load(yml, Loader=yaml.FullLoader)
 
     @property
     def output_directory(self):
