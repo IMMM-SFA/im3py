@@ -8,5 +8,7 @@ License:  BSD 2-Clause, see LICENSE and DISCLAIMER files
 """
 
 from im3py.model import Model
+from im3py.install_supplement import InstallSupplement
 
-__all__ = ['Model']
+
+__all__ = ['Model', 'InstallSupplement']
