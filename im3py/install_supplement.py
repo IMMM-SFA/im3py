@@ -17,7 +17,7 @@ from io import BytesIO
 
 
 class InstallSupplement:
-    """Download and unpack example data supplement from Zenodo that matches the current installed distribution.
+    """Download and unpack example data supplement from a remote source that matches the current installed distribution.
 
     :param example_data_directory:              Full path to the directory you wish to install
                                                 the example data to.  Must be write-enabled

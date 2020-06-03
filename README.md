@@ -41,11 +41,13 @@ The following table outlines each part of the repository and it's purpose:
 | `im3py/model.py` | A model class that instantiates a logger and runs the model under user defined conditions |
 | `im3py/process_step.py` | A class that the generator is built from which allows the user to place conditions on how the model will run per time-step |
 | `im3py/read_config.py` | A class that reads the configuration file or from arguments passed into the model class |
+| `im3py/install_supplement.py` | A class that downloads and unpacks an example data supplement from a remote source that matches the current installed distribution |
 | `im3py/some_code.py` | Fake code to represent what a user may provide.  This file should be removed. |
 | `im3py/tests` | The module holding the test suite |
 | `im3py/tests/test_model.py` | Tests for model.py |
 | `im3py/tests/test_process_step.py` | Tests for process_step.py |
 | `im3py/tests/test_read_config.py` | Tests for read_config.py |
+| `im3py/tests/test_install_supplement.py` | Tests for install_supplement.py |
 | `im3py/tests/test_some_code.py` | Tests for some_code.py |
 | `im3py/tests/data` | Directory holding test data.  Optional directories are `inputs` and `comp_data`.  The `outputs` are not housed in the repository. |
 | `im3py/tests/data/inputs` | Directory housing inputs that should be expected for a subset of a run |
@@ -53,6 +55,7 @@ The following table outlines each part of the repository and it's purpose:
 | `im3py/tests/data/comp_data` | Directory housing outputs that should be expected for a subset of a run.  Test sets should be subsets and be able to run quickly where possible. |
 | `im3py/tests/data/comp_data/output_year_2015.txt` | Expected output file for time-step 2015 |
 | `im3py/tests/data/comp_data/output_year_2016.txt` | Expected output file for time-step 2016 |
+| `im3py/tests/data/comp_data/test_no-header.csv` | Expected data from install supplement download |
 
 
 ## Getting Started Using the `im3py` Package
@@ -168,4 +171,17 @@ run.advance_step()
 
 # close out run
 run.close()
+```
+
+### Example 4:  Install supplemental data from a remote data source
+```python
+from im3py import InstallSupplement
+
+dirpath = '<path to where you want to unpack the data>'
+
+# instantiate class
+sup = InstallSupplement(dirpath)
+
+# fetch and unpack zipped data
+sup.fetch_unpack_data()
 ```
