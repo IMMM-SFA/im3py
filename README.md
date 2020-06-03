@@ -84,20 +84,17 @@ See examples below for how to pass into the `Model` class
 |----|----|----|
 | `config_file` | str | Full path to configuration YAML file with file name and extension. If not provided by the user, the code will default to the expectation of alternate arguments. |
 | `output_directory` | string | Full path with file name and extension to the output directory where outputs and the log file will be written. |
-| `start_year` | int | Four digit first year to process for the projection. |
-| `through_year` | int | Four digit last year to process for the projection. |
-| `time_step` | int | Number of steps (e.g. number of years between projections) |
-| `alpha_urban` | float | Alpha parameter for urban. Represents the degree to which the population size of surrounding cells translates into the suitability of a focal cell.,A positive value indicates that the larger the population that is located within the 100 km neighborhood, the more suitable the focal cell is.,More negative value implies less suitable. Acceptable range:,-2.0 to 2.0 |
-| `beta_urban` | float | Beta parameter for urban. Reflects the significance of distance to surrounding cells on the suitability of a focal cell.,Within 100 km, beta determines how distance modifies the effect on suitability. Acceptable range:,-2.0 to 2.0 |
-| `alpha_rural` | float | Alpha parameter for rural. Represents the degree to which the population size of surrounding cells translates into the suitability of a focal cell.,A positive value indicates that the larger the population that is located within the 100 km neighborhood, the more suitable the focal cell is.,More negative value implies less suitable. Acceptable range:,-2.0 to 2.0 |
-| `beta_rural` | float | Beta parameter for rural. Reflects the significance of distance to surrounding cells on the suitability of a focal cell.,Within 100 km, beta determines how distance modifies the effect on suitability. Acceptable range:,-2.0 to 2.0 |
+| `start_step` | int | Start time step value. |
+| `through_step` | int | Through time step value. |
+| `time_step` | int | Number of steps (e.g. number of years or minutes between projections) |
+| `alpha_param` | float | Alpha parameter for model.  Acceptable range:  -2.0 to 2.0 |
+| `beta_param` | float | Beta parameter for model.  Acceptable range:  -2.0 to 2.0 |
+| `write_logfile` | bool | Optional, choose to write log as file. |
 
 ### Variable arguments
 Users can update variable argument values after model initialization; this includes updating values between time steps (see **Example 3**).  The following are variable arguments:
-- `alpha_urban`
-- `beta_urban`
-- `alpha_rural`
-- `beta_rural`
+- `alpha_param`
+- `beta_param`
 
 ### YAML configuration file option (e.g., config.yml)
 Arguments can be passed into the `Model` class using a YAML configuration file as well (see **Example 1**):
@@ -105,13 +102,12 @@ Arguments can be passed into the `Model` class using a YAML configuration file a
 ```yaml
 # Example configuration file setup
 output_directory:  "<Full path to the output directory>"
-start_year: 2015
-through_year: 2020
+start_step: 2015
+through_step: 2016
 time_step: 1
-alpha_urban: 2.0
-alpha_rural: 0.08
-beta_urban: 1.78
-beta_rural: 1.42
+alpha_param: 2.0
+beta_param: 1.42
+write_logfile: False
 ```
 
 ### Expected outputs
@@ -132,14 +128,13 @@ run.run_all_steps()
 ```python
 from im3py.model import Model
 
-run = Model(output_directory="<output directory path>",
-            start_year=2015,
-            through_year=2030,
+run = Model(output_directory="<output directory path>", 
+            start_step=2015,
+            through_step=2016,
             time_step=1,
-            alpha_urban= 2.0,
-            alpha_rural=0.08,
-            beta_urban=1.78,
-            beta_rural=1.42)
+            alpha_param=2.0,
+            beta_param=1.42,
+            write_logfile=False)
 
 run.run_all_steps()
 ```
@@ -148,14 +143,13 @@ run.run_all_steps()
 ```python
 from im3py.model import Model
 
-run = Model(output_directory="<output directory path>",
-            start_year=2015,
-            through_year=2030,
+run = Model(output_directory="<output directory path>", 
+            start_step=2015,
+            through_step=2016,
             time_step=1,
-            alpha_urban= 2.0,
-            alpha_rural=0.08,
-            beta_urban=1.78,
-            beta_rural=1.42)
+            alpha_param=2.0,
+            beta_param=1.42,
+            write_logfile=False)
 
 # initialize model
 run.initialize()
@@ -163,8 +157,8 @@ run.initialize()
 # downscale year 0
 run.advance_step()
 
-# modify the calibrated alpha parameter value for urban
-run.alpha_urban = -0.1
+# update the calibrated alpha parameter value
+run.alpha_param = -0.1
 
 # run next step with modified parameters
 run.advance_step()
