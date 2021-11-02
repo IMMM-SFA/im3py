@@ -31,6 +31,7 @@ The following table outlines each part of the repository and it's purpose:
 | ---- | ---- |
 | `.gitignore` | Which files Git will ignore in your local when you push your changes to the remote |
 | `.travis.yml`| Setup YAML file for Travis-CI; includes instantiation of Codecov
+| `Dockerfile` | Basic Dockerfile for creating a Docker container. 
 | `LICENSE` | The appropriate open-source license.  Work with the software engineering team to ensure this is correct for your software |
 | `MANIFEST.in` | A log of files to include in your source distribution that are not automatically included by default |
 | `README.md` | A README file in Markdown that will display on the splash page of the repository |
@@ -179,3 +180,28 @@ sup = InstallSupplement(dirpath)
 # fetch and unpack zipped data
 sup.fetch_unpack_data()
 ```
+
+## Docker: How to dockerize the `im3py` package
+
+In order to set up a docker container running the `im3py` package, we build the docker image and run the image. 
+
+Build:
+```bash
+$ pwd
+/.../im3py
+$ docker build -t <image name> .
+```
+
+Run:
+
+```bash
+$ docker run --name <container name> -d <image name>
+```
+
+Now we exec into the running container and check that the python package `Model` exists. 
+```bash
+$ docker exec -it <container name> /bin/bash
+$ <container name># python
+>>> from im3py import Model
+```
+
